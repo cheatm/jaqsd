@@ -5,12 +5,5 @@ services:
     build: .
     image: jaqsd
     volumes:
-      - type: volume
-        source: logs
-        target: /logs
-      - type: volume
-        source: conf
-        target: /conf
-volumes:
-  logs:
-  conf:
+      - "./conf:/conf"
+      - ".:/logs"

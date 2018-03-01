@@ -97,9 +97,9 @@ def get_api():
 
 
 import click
-from datetime import datetime
+from datetime import datetime, timedelta
 
-today = int(datetime.now().strftime("%Y%m%d"))
+last_week = int((datetime.now() - timedelta(7)).strftime("%Y%m%d"))
 
 
 def DEFAULT(func):
@@ -113,7 +113,7 @@ def DEFAULT(func):
 
 
 CODES = click.Argument(["codes"], nargs=-1)
-START = click.Option(["-s", "--start"], default=today, type=click.INT)
+START = click.Option(["-s", "--start"], default=last_week, type=click.INT)
 END = click.Option(["-e", "--end"], default=99999999, type=click.INT)
 
 

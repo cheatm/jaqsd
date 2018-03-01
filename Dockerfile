@@ -4,7 +4,7 @@ RUN apt-get update
 RUN apt-get install -y cron libsnappy-dev
 RUN echo 'Asia/Shanghai' >/etc/timezone & cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-ADD ./requirements.txt
+ADD ./requirements.txt .
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt --no-cache-dir
 
 ADD . /jaqsd

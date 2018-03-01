@@ -15,7 +15,7 @@ RUN ln -s /jaqsd/routing/env.sh /etc/profile.d/env.sh
 
 RUN crontab /jaqsd/routing/timelist
 
-VOLUME "/logs"
+VOLUME ["/logs", "/conf"]
 
 CMD /usr/sbin/cron -f
 

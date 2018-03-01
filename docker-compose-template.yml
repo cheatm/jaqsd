@@ -1,0 +1,12 @@
+version: '3'
+services:
+  jaqsd:
+    container_name: jaqsd
+    build: .
+    image: jaqsd
+    volumes:
+      - type: volume
+        source: logs
+        target: /logs
+volumes:
+  logs:

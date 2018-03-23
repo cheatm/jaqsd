@@ -1,6 +1,5 @@
 from jaqsd import conf, indexes
-from jaqs.data import DataApi
-from datetime import datetime
+from jaqsd.utils.api import get_api
 from pymongo import UpdateOne, MongoClient
 import logging
 
@@ -88,12 +87,6 @@ def write(codes, start, end):
 
 def get_db():
     return MongoClient(conf.uri())[conf.daily()]
-
-
-def get_api():
-    api = DataApi()
-    api.login(conf.username(), conf.password())
-    return api
 
 
 import click

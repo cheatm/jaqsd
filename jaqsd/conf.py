@@ -34,3 +34,11 @@ def username():
 
 def password():
     return _config.get("password", "password")
+
+
+def col_map():
+    return _config.get("col_map")
+
+
+def get_col(view):
+    return col_map()[view]

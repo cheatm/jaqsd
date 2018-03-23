@@ -9,7 +9,6 @@ import logging
 import click
 
 
-conf.init('D:/jaqsd/conf')
 UNIQUE = ["symbol", "ann_date", "report_type", "report_date"]
 
 TABLES = {
@@ -192,4 +191,5 @@ group = click.Group(
 
 
 if __name__ == '__main__':
+    conf.init()
     group()

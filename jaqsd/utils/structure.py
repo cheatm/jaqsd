@@ -11,12 +11,14 @@ class QueryStructure(object):
             optional,
             fields,
             data_format="pandas",
-            defaults=None
+            defaults=None,
+            d_fields=None
     ):
         self.view = view
         self.compulsory = compulsory
         self.optional = optional
         self.fields = fields
+        self.d_fields = d_fields if isinstance(d_fields, set) else set()
         self.data_format = data_format
         self.defaults = defaults if isinstance(defaults, dict) else {}
 
@@ -26,7 +28,9 @@ class QueryStructure(object):
     def query(self, *fields, **filters):
         self._check(filters)
         if len(fields):
-            f = ",".join(fields)
+            _f = set(fields)
+            _f.update(self.d_fields)
+            f = ",".join(_f)
         else:
             f = ",".join(self.fields)
             # f = ""
@@ -139,11 +143,11 @@ SecDailyIndicator = QueryStructure(
     view="lb.secDailyIndicator",
     compulsory=['symbol'],
     optional=DATE_RANGE,
-    fields=['symbol', 'trade_date', 'total_mv', 'float_mv', 'pe', 'pb', 'pe_ttm',  'pcf_ocf',
-            'pcf_ocfttm', 'pcf_ncf', 'pcf_ncfttm', 'ps', 'ps_ttm',  'turnoverratio', 'freeturnover',
-            'total_share', 'float_share', 'close', 'price_div_dps', 'free_share', 'profit_ttm', 'profit_lyr',
-            'net_assets', 'cash_flows_oper_act_ttm', 'cash_flows_oper_act_lyr', 'operrev_ttm', 'operrev_lyr',
-            'limit_status']
+    fields=['symbol', 'trade_date', "total_mv", "float_mv", "pe", "pb", "pe_ttm", "pcf_ocf", "pcf_ocfttm", "pcf_ncf",
+            "pcf_ncfttm", "ps", "ps_ttm", "turnover_ratio", "free_turnover_ratio", "total_share", "limit_status",
+            "float_share", "price_div_dps", "free_share", "np_parent_comp_ttm", "oper_rev_lyr", "np_parent_comp_lyr",
+            "net_assets", "ncf_oper_ttm", "ncf_oper_lyr", "oper_rev_ttm", "close"],
+    d_fields={'symbol', 'trade_date'}
 )
 
 
@@ -382,3 +386,8 @@ FinIndicator = QueryStructure(
 def dct(s):
     return {"view": s.view, "compulsory": ", ".join(s.compulsory), "optional": ", ".join(s.optional),
             "fields": ",".join(s.fields)}
+
+
+__all__ = ["SecDailyIndicator", "SecAdjFactor", "SecTradeCal", "SecDividend", "SecIndustry", "SecRestricted",
+           "SecSusp", "InstrumentInfo", "ProfitExpress", "Income", "IndexCons", "FinIndicator", "CashFlow",
+           "BalanceSheet", "MFBondPortfolio", "MFDividend", 'MFNav', "MFPortfolio"]

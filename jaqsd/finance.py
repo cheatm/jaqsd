@@ -1,87 +1,39 @@
 from jaqsd import conf
-from jaqsd.utils.api import get_api
-from jaqsd.utils.structure import InstrumentInfo, Income, BalanceSheet, CashFlow, SecTradeCal
+from jaqsd.utils import api
+from jaqsd.utils.structure import Income, BalanceSheet, CashFlow
+from jaqsd.utils.tool import TradeDayIndex
 from datetime import datetime
 from pymongo import MongoClient, InsertOne
 import pandas as pd
-import os
 import logging
 import click
 
 
 UNIQUE = ["symbol", "ann_date", "report_type", "report_date"]
 
-TABLES = {
+QUERIES = {
     Income.view: Income,
     BalanceSheet.view: BalanceSheet,
     CashFlow.view: CashFlow
 }
 
 
-def get_data(api, query, **kwargs):
-    data, msg = api.query(**query(**kwargs))
+def get_data(_api, query, **kwargs):
+    data, msg = _api.query(**query(**kwargs))
     if msg == "0,":
         return data
     else:
         raise Exception(msg)
 
 
-def get_symbols(api):
-    if "symbols" in globals():
-        return globals()["symbols"]
-    else:
-        data, msg = api.query(**InstrumentInfo(inst_type="1", market="SZ,SH"))
-        if msg == "0,":
-            s = ",".join(data["symbol"])
-            globals()["symbols"] = s
-            return s
+class DailyIndex(TradeDayIndex):
 
-
-def trade_day_index(api, start, end):
-    params = {}
-    if start:
-        params["start_date"] = start
-    if end:
-        params["end_date"] = end
-    data, msg = api.query(**SecTradeCal("istradeday", "trade_date", **params))
-    if msg == "0,":
-        return data.set_index("trade_date").index
-    else:
-        raise Exception(msg)
-
-
-class DailyIndex(object):
-
-    def __init__(self, root, api):
-        self.api = api
-        self.root = root
-        self.name = os.path.join(root, "daily.xlsx")
-        if os.path.isfile(self.name):
-            self.table = pd.read_excel(self.name, index_col="trade_date")
-
-    def create(self, start=None, end=None):
-        dates = trade_day_index(self.api, start, end)
-        table = pd.DataFrame(0, dates, list(TABLES.keys()))
-        self.table = table
-        self.flush()
-        return table
-
-    def flush(self):
-        self.table.to_excel(self.name)
-
-    # def pull(self, view, symbols=None, start=None, end=None, cover=False):
-    #     return pd.concat(list(self.iter_daily(view, symbols, start, end, cover)), ignore_index=True)
-
-    def search_range(self, view, start=None, end=None, cover=False):
-        sliced = slice(*self.table.index.slice_locs(start, end, kind="loc"))
-        if cover:
-            return self.table.index[sliced]
-        else:
-            series = self.table[view].iloc[sliced]
-            return series[series == 0].index
+    def __init__(self, root, _api):
+        super(DailyIndex, self).__init__(root, "daily.xlsx", list(QUERIES.keys()))
+        self.api = _api
 
     def iter_daily(self, view, symbol, start=None, end=None, cover=False):
-        query = TABLES[view]
+        query = QUERIES[view]
         for date in self.search_range(view, start, end, cover):
             try:
                 data = get_data(self.api, query, symbol=symbol, start_date=date, end_date=date)
@@ -90,8 +42,25 @@ class DailyIndex(object):
             else:
                 yield date, data
 
-    def fill(self, view, date, value):
-        self.table.loc[date, view] = value
+    def reach(self, view, symbol, start=None, end=None):
+        query = QUERIES[view]
+        for date in self.search_range(view, start, end):
+            reachable, result = reach_one(self.api, query, symbol, date)
+            if reachable:
+                yield date, result
+            else:
+                logging.warning("%s | %s | unreachable", view, date)
+                self.fill(view, date, -1)
+        self.flush()
+
+
+def reach_one(_api, query, symbol, date, retry=3):
+    for i in range(retry):
+        data = get_data(_api, query, symbol=symbol, start_date=date, end_date=date)
+        if len(data.index) != 0:
+            return True, data
+
+    return False, None
 
 
 class DailyDBWriter(object):
@@ -107,9 +76,24 @@ class DailyDBWriter(object):
     def write(self, view, data):
         if isinstance(data, pd.DataFrame):
             col = self.get_col(view)
-            return col.bulk_write([InsertOne(row.to_dict()) for name, row in data.iterrows()]).inserted_count
+            return col.bulk_write([InsertOne(values.dropna().to_dict()) for name, values in data.iterrows()]).inserted_count
         else:
             raise TypeError("data should be pd.DataFrame not: %s" % type(data))
+
+    def check(self, view, *dates):
+        col = self.get_col(view)
+        for date in dates:
+            try:
+                result = check_count_by_ann_date(col, str(date))
+            except Exception as e:
+                logging.error("check | %s | %s | %s", view, date, e)
+            else:
+                logging.warning("check | %s | %s | %s", view, date, result)
+                yield date, result
+
+
+def check_count_by_ann_date(col, date):
+    return col.find({"ann_date": date}).count()
 
 
 def write(view, symbol=None, start=None, end=None, cover=False):
@@ -117,13 +101,13 @@ def write(view, symbol=None, start=None, end=None, cover=False):
     di = get_index()
 
     if symbol is None:
-        symbol = get_symbols(di.api)
+        symbol = api.all_stock_symbol()
     if end is None:
         end = get_today()
 
     for date, data in di.iter_daily(view, symbol, start, end, cover):
         try:
-            if len(data):
+            if len(data.index):
                 result = writer.write(view, data)
             else:
                 result = -1
@@ -143,12 +127,12 @@ def get_writer():
         return globals()["ddw"]
 
 
-def get_index():
+def get_index(login=True):
     try:
         return globals()["di"]
-        # return DailyIndex(conf.CONF_DIR, get_api())
     except KeyError:
-        globals()["di"] = DailyIndex(conf.CONF_DIR, get_api())
+        data_api = api.get_api() if login else None
+        globals()["di"] = DailyIndex(conf.CONF_DIR, data_api)
         return globals()["di"]
 
 
@@ -157,15 +141,21 @@ def get_today():
     return t.year*10000+t.month*100+t.day
 
 
+VIEW = click.argument("views", nargs=-1)
+START = click.option("-s", "--start", default=None, type=click.INT)
+END = click.option("-e", "--end", default=get_today(), type=click.INT)
+SYMBOL = click.option("--symbol", default=None)
+COVER = click.option("-c", "--cover", is_flag=True, default=False)
+
 @click.command("write")
-@click.argument("views", nargs=-1)
-@click.option("--symbol", default=None)
-@click.option("-s", "--start", default=None, type=click.INT)
-@click.option("-e", "--end", default=None, type=click.INT)
-@click.option("-c", "--cover", is_flag=True, default=False)
+@VIEW
+@SYMBOL
+@START
+@END
+@COVER
 def writes(views, symbol=None, start=None, end=None, cover=False):
     if len(views) == 0:
-        views = list(TABLES.keys())
+        views = list(QUERIES.keys())
 
     if start and end:
         if start > end:
@@ -175,18 +165,63 @@ def writes(views, symbol=None, start=None, end=None, cover=False):
     for view in views:
         write(view, symbol, start, end, cover)
 
-@click.command("command")
-@click.option("-s", "--start", default=None, type=click.INT)
-@click.option("-e", "--end", default=None, type=click.INT)
+
+@click.command("create")
+@START
+@END
 def create(start, end):
     di = get_index()
     di.create(start, end)
 
 
+@click.command("check")
+@VIEW
+@START
+@END
+@COVER
+def check(views, start, end, cover=False):
+    if len(views) == 0:
+        views = list(QUERIES.keys())
+
+    writer = get_writer()
+    di = get_index(False)
+    for name in views:
+        dates = di.search_range(name, start, end, cover)
+        for date, count in writer.check(name, *dates):
+            di.fill(name, date, count)
+        di.flush()
+
+
+@click.command("reach")
+@VIEW
+@START
+@END
+def reach(views, start, end):
+    if len(views) == 0:
+        views = list(QUERIES.keys())
+
+    di = get_index()
+    writer = get_writer()
+    for name in views:
+        reachable = dict(di.reach(name, api.all_stock_symbol(), start, end))
+        for date, data in reachable.items():
+            try:
+                if len(data.index):
+                    result = writer.write(name, data)
+                else:
+                    result = 0
+            except Exception as e:
+                logging.error("write | %s | %s | %s", name, str(date), e)
+            else:
+                logging.warning("write | %s | %s | %s", name, str(date), result)
+
+
 group = click.Group(
     "group",
     {"write": writes,
-     "create": create}
+     "create": create,
+     "check": check,
+     "reach": reach}
 )
 
 

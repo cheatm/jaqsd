@@ -42,3 +42,8 @@ def col_map():
 
 def get_col(view):
     return col_map()[view]
+
+
+def get_client():
+    from pymongo import MongoClient
+    return MongoClient(uri())

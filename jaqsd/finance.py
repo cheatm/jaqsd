@@ -168,7 +168,7 @@ def writes(views, symbol=None, start=None, end=None, cover=False):
 
 @click.command("create")
 @START
-@END
+@click.option("-e", "--end", default=None, type=click.INT)
 def create(start, end):
     di = get_index()
     di.create(start, end)

@@ -40,8 +40,16 @@ def col_map():
     return _config.get("col_map")
 
 
+def db_map():
+    return _config.get("db_map")
+
+
 def get_col(view):
     return col_map()[view]
+
+
+def get_db(view):
+    return db_map()[view]
 
 
 def get_client():

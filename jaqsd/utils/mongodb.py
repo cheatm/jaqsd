@@ -21,7 +21,7 @@ def iter_update(data):
 
 
 def make_update(series, index):
-    return UpdateOne({index: series.name}, series.dropna().to_dict())
+    return UpdateOne({index: series.name}, {"$set": series.dropna().to_dict()})
 
 
 METHODS = {"insert": iter_insert,

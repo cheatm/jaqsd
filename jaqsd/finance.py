@@ -1,7 +1,7 @@
 from jaqsd import conf
 from jaqsd.utils import api
 from jaqsd.utils.structure import Income, BalanceSheet, CashFlow
-from jaqsd.utils.tool import TradeDayIndex
+from jaqsd.utils.tool import TradeDayIndex, START, END_TODAY, SYMBOL, COVER, VIEW
 from datetime import datetime
 from pymongo import MongoClient, InsertOne
 import pandas as pd
@@ -141,17 +141,11 @@ def get_today():
     return t.year*10000+t.month*100+t.day
 
 
-VIEW = click.argument("views", nargs=-1)
-START = click.option("-s", "--start", default=None, type=click.INT)
-END = click.option("-e", "--end", default=get_today(), type=click.INT)
-SYMBOL = click.option("--symbol", default=None)
-COVER = click.option("-c", "--cover", is_flag=True, default=False)
-
 @click.command("write")
 @VIEW
 @SYMBOL
 @START
-@END
+@END_TODAY
 @COVER
 def writes(views, symbol=None, start=None, end=None, cover=False):
     if len(views) == 0:
@@ -177,7 +171,7 @@ def create(start, end):
 @click.command("check")
 @VIEW
 @START
-@END
+@END_TODAY
 @COVER
 def check(views, start, end, cover=False):
     if len(views) == 0:
@@ -195,7 +189,7 @@ def check(views, start, end, cover=False):
 @click.command("reach")
 @VIEW
 @START
-@END
+@END_TODAY
 def reach(views, start, end):
     if len(views) == 0:
         views = list(QUERIES.keys())

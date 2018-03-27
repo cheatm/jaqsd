@@ -6,3 +6,5 @@ col_map:
   lb.income: lb.income
   lb.cashFlow: lb.cashFlow
   lb.balanceSheet: lb.balanceSheet
+db_map:
+  lb.secDailyIndicator: SecDailyIndicator

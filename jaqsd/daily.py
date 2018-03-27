@@ -1,4 +1,4 @@
-from jaqsd import conf, indexes
+from jaqsd import conf
 from jaqsd.utils.api import get_api
 from pymongo import UpdateOne, MongoClient
 import logging
@@ -6,6 +6,8 @@ import logging
 
 columns = ["open", "high", "low", "close", "volume", "turnover"]
 fields = ",".join(columns)
+FILE = "indexes.yml"
+INDEXES = []
 
 
 class IdxWriter(object):
@@ -98,7 +100,7 @@ last_week = int((datetime.now() - timedelta(7)).strftime("%Y%m%d"))
 def DEFAULT(func):
     def wrapped(**kwargs):
         if len(kwargs.get("codes", [])) == 0:
-            kwargs['codes'] = indexes.codes
+            kwargs['codes'] = list(INDEXES)
         return func(**kwargs)
 
     wrapped.__name__ = func.__name__
@@ -128,7 +130,11 @@ group = click.Group(
 )
 
 
+def init_indexes():
+    globals()["INDEXES"] = conf.load(FILE, list)
+
+
 if __name__ == '__main__':
     conf.init()
-    indexes.init()
+    init_indexes()
     group()

@@ -1,3 +1,4 @@
+import logging
 import os
 import yaml
 
@@ -55,3 +56,9 @@ def get_db(view):
 def get_client():
     from pymongo import MongoClient
     return MongoClient(uri())
+
+
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+    )

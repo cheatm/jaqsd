@@ -12,7 +12,8 @@ class QueryStructure(object):
             fields,
             data_format="pandas",
             defaults=None,
-            d_fields=None
+            d_fields=None,
+            index=None
     ):
         self.view = view
         self.compulsory = compulsory
@@ -21,6 +22,7 @@ class QueryStructure(object):
         self.d_fields = d_fields if isinstance(d_fields, set) else set()
         self.data_format = data_format
         self.defaults = defaults if isinstance(defaults, dict) else {}
+        self.index = index
 
     def __call__(self, *args, **kwargs):
         return self.query(*args, **kwargs)
@@ -104,7 +106,8 @@ SecAdjFactor = QueryStructure(
     view="lb.secAdjFactor",
     compulsory=["symbol"],
     optional=["start_date", "end_date"],
-    fields=["symbol", "trade_date", "adjust_factor"]
+    fields=["symbol", "trade_date", "adjust_factor"],
+    index="trade_date"
 )
 
 
@@ -191,7 +194,8 @@ BalanceSheet = QueryStructure(
             'spe_bal_liab_diff', 'tot_bal_liab_diff', 'spe_bal_shrhldr_eqy_diff', 'tot_bal_shrhldr_eqy_diff',
             'spe_bal_liab_eqy_diff', 'tot_bal_liab_eqy_diff', 'lt_payroll_payable', 'other_comp_income',
             'other_equity_tools', 'other_equity_tools_p_shr', 'lending_funds', 'accounts_receivable',
-            'st_financing_payable', 'payables', 'update_flag']
+            'st_financing_payable', 'payables', 'update_flag'],
+    index="ann_date"
 )
 
 
@@ -221,7 +225,8 @@ Income = QueryStructure(
             'adjlossgain_prevyear', 'transfer_from_surplusreserve', 'transfer_from_housingimprest', 'update_flag'
             'transfer_from_others', 'distributable_profit', 'withdr_legalsurplus', 'withdr_legalpubwelfunds',
             'workers_welfare', 'withdr_buzexpwelfare', 'withdr_reservefund', 'distributable_profit_shrhder',
-            'prfshare_dvd_payable', 'withdr_othersurpreserve', 'comshare_dvd_payable', 'capitalized_comstock_div']
+            'prfshare_dvd_payable', 'withdr_othersurpreserve', 'comshare_dvd_payable', 'capitalized_comstock_div'],
+    index="ann_date"
 )
 
 
@@ -260,7 +265,8 @@ CashFlow = QueryStructure(
             'tot_bal_netcash_outflows_inv', 'spe_bal_cash_inflows_fnc', 'tot_bal_cash_inflows_fnc',
             'spe_bal_cash_outflows_fnc', 'tot_bal_cash_outflows_fnc', 'tot_bal_netcash_outflows_fnc',
             'spe_bal_netcash_inc', 'tot_bal_netcash_inc', 'spe_bal_netcash_equ_undir', 'tot_bal_netcash_equ_undir',
-            'spe_bal_netcash_inc_undir', 'spe_bal_netcash_inc_undir', 'update_flag']
+            'spe_bal_netcash_inc_undir', 'spe_bal_netcash_inc_undir', 'update_flag'],
+    index="ann_date"
 )
 
 

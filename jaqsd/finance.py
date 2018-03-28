@@ -9,8 +9,6 @@ import logging
 import click
 
 
-UNIQUE = ["symbol", "ann_date", "report_type", "report_date"]
-
 QUERIES = {
     Income.view: Income,
     BalanceSheet.view: BalanceSheet,
@@ -82,9 +80,10 @@ class DailyDBWriter(object):
 
     def check(self, view, *dates):
         col = self.get_col(view)
+        query = QUERIES[view]
         for date in dates:
             try:
-                result = check_count_by_ann_date(col, str(date))
+                result = check_count_by_key(col, str(date), query.index)
             except Exception as e:
                 logging.error("check | %s | %s | %s", view, date, e)
             else:
@@ -92,8 +91,8 @@ class DailyDBWriter(object):
                 yield date, result
 
 
-def check_count_by_ann_date(col, date):
-    return col.find({"ann_date": date}).count()
+def check_count_by_key(col, date, key):
+    return col.find({key: date}).count()
 
 
 def write(view, symbol=None, start=None, end=None, cover=False):
@@ -220,5 +219,5 @@ group = click.Group(
 
 
 if __name__ == '__main__':
-    conf.init()
+    conf.init("D:/jaqsd/conf")
     group()

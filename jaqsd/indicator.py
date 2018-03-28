@@ -13,8 +13,8 @@ FIELDS.remove("trade_date")
 FIELDS.remove("symbol")
 
 
-def logger(*keys):
-    formatter = " | ".join(["%s"]*(len(keys)+1))
+def logger(tag, *keys):
+    formatter = "%s | %s" % (tag, " | ".join(["%s"]*(len(keys)+1)))
 
     def select(*args, **kwargs):
         for key in keys:
@@ -128,7 +128,7 @@ class FieldsWriter(object):
     def __init__(self, db):
         self.db = db
 
-    @logger(3, 1)
+    @logger("write", 3, 1)
     def write(self, name, data, how='insert'):
         col = self.db[name]
         method = METHODS[how]
@@ -140,7 +140,7 @@ class FieldsWriter(object):
         else:
             return result
 
-    @logger(1, 2)
+    @logger("check", 1, 2)
     def check(self, name, date):
         return self.db[name].find({"trade_date": date}).count()
 

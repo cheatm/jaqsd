@@ -1,7 +1,7 @@
 from jaqsd import conf
 from jaqsd.utils.mongodb import METHODS
 from jaqsd.utils import api
-from jaqsd.utils.tool import TradeDayIndex, START, END_TODAY, COVER, END
+from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, COVER, END
 import pandas as pd
 import logging
 from jaqsd.utils.structure import SecDailyIndicator
@@ -166,7 +166,7 @@ def create(start, end):
 @click.command("write")
 @click.argument("fields", nargs=-1)
 @START
-@END_TODAY
+@END_YESTERDAY
 @COVER
 @click.option('-a', "--axis", default="date")
 @click.option('-h', "--how", default="insert")
@@ -180,7 +180,7 @@ def write(fields, start=None, end=None, cover=False, axis='date', how="insert"):
 @click.command("check")
 @click.argument("fields", nargs=-1)
 @START
-@END_TODAY
+@END_YESTERDAY
 @COVER
 def check(fields, start=None, end=None, cover=False):
     fi = FieldIndex(conf.CONF_DIR)

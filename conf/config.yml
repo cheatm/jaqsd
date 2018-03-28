@@ -1,5 +1,5 @@
-mongodb_uri: "mongodb://192.168.0.101,192.168.0.102"
-#mongodb_uri: "mongodb://localhost:37017"
+#mongodb_uri: "mongodb://192.168.0.101,192.168.0.102"
+mongodb_uri: "mongodb://localhost:37017"
 username: "13823156147"
 password: "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVfdGltZSI6IjE1MTI3ODY3ODYxODMiLCJpc3MiOiJhdXRoMCIsImlkIjoiMTM4MjMxNTYxNDcifQ.Lt4orfuPoP5xVM_t3n4SdC7xwPNDoloHdvCAWU4JfYQ"
 col_map:

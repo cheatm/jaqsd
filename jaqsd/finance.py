@@ -1,7 +1,7 @@
 from jaqsd import conf
 from jaqsd.utils import api
-from jaqsd.utils.structure import Income, BalanceSheet, CashFlow
-from jaqsd.utils.tool import TradeDayIndex, START, END_TODAY, SYMBOL, COVER, VIEW
+from jaqsd.utils.structure import Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend
+from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, SYMBOL, COVER, VIEW
 from datetime import datetime
 from pymongo import MongoClient, InsertOne
 import pandas as pd
@@ -9,11 +9,14 @@ import logging
 import click
 
 
-QUERIES = {
-    Income.view: Income,
-    BalanceSheet.view: BalanceSheet,
-    CashFlow.view: CashFlow
-}
+# QUERIES = {
+#     Income.view: Income,
+#     BalanceSheet.view: BalanceSheet,
+#     CashFlow.view: CashFlow,
+#     SecAdjFactor.view: SecAdjFactor
+# }
+QUERIES = {query.view: query for query in
+           [Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend]}
 
 
 def get_data(_api, query, **kwargs):
@@ -36,7 +39,7 @@ class DailyIndex(TradeDayIndex):
             try:
                 data = get_data(self.api, query, symbol=symbol, start_date=date, end_date=date)
             except Exception as e:
-                logging.error(" | ".join((view, date, e)))
+                logging.error(" | ".join(["%s"]*3), view, date, e)
             else:
                 yield date, data
 
@@ -111,11 +114,9 @@ def write(view, symbol=None, start=None, end=None, cover=False):
             else:
                 result = -1
         except Exception as e:
-            logging.error("%s | %s | %s", view, str(date), e)
+            logging.error("write | %s | %s | %s", view, str(date), e)
         else:
-            logging.warning("%s | %s | %s", view, str(date), result)
-            di.fill(view, date, result)
-    di.flush()
+            logging.warning("write | %s | %s | %s", view, str(date), result)
 
 
 def get_writer():
@@ -144,7 +145,7 @@ def get_today():
 @VIEW
 @SYMBOL
 @START
-@END_TODAY
+@END_YESTERDAY
 @COVER
 def writes(views, symbol=None, start=None, end=None, cover=False):
     if len(views) == 0:
@@ -170,7 +171,7 @@ def create(start, end):
 @click.command("check")
 @VIEW
 @START
-@END_TODAY
+@END_YESTERDAY
 @COVER
 def check(views, start, end, cover=False):
     if len(views) == 0:
@@ -188,7 +189,7 @@ def check(views, start, end, cover=False):
 @click.command("reach")
 @VIEW
 @START
-@END_TODAY
+@END_YESTERDAY
 def reach(views, start, end):
     if len(views) == 0:
         views = list(QUERIES.keys())
@@ -219,5 +220,5 @@ group = click.Group(
 
 
 if __name__ == '__main__':
-    conf.init("D:/jaqsd/conf")
+    conf.init()
     group()

@@ -98,6 +98,7 @@ SecDividend = QueryStructure(
     fields=["symbol", "ann_date", "end_date", "process_stauts", "publish_date", "record_date",
             "exdiv_date", "cash", "cash_tax", "share_ratio", "share_trans_ratio", "cashpay_date",
             "bonus_list_date"],
+    index="exdiv_date"
 )
 
 
@@ -270,13 +271,24 @@ CashFlow = QueryStructure(
 )
 
 
+class ProfitExpressQuery(QueryStructure):
+
+    def query(self, *fields, **filters):
+        if "start_date" in filters:
+            filters["start_anndate"] = filters.pop("start_date")
+        if "end_date" in filters:
+            filters["end_anndate"] = filters.pop("end_date")
+        return super(ProfitExpressQuery, self).query(*fields, **filters)
+
+
 # 业绩快报
-ProfitExpress = QueryStructure(
+ProfitExpress = ProfitExpressQuery(
     view="lb.profitExpress",
     compulsory=SYMBOL,
     optional=['start_anndate', 'end_anndate', 'start_reportdate', 'end_reportdate'],
     fields=['symbol', 'ann_date', 'report_date', 'oper_rev', 'oper_profit', 'total_profit', 'net_profit_int_inc',
-            'total_assets', 'tot_shrhldr_int', 'eps_diluted', 'roe_diluted', 'is_audit', 'yoy_int_inc']
+            'total_assets', 'tot_shrhldr_int', 'eps_diluted', 'roe_diluted', 'is_audit', 'yoy_int_inc'],
+    index="ann_date"
 )
 
 

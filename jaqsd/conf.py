@@ -46,7 +46,7 @@ def db_map():
 
 
 def get_col(view):
-    return col_map()[view]
+    return col_map().get(view, view)
 
 
 def get_db(view):

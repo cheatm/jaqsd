@@ -1,18 +1,18 @@
 from jaqsd.utils import api
-from datetime import datetime
+from datetime import datetime, timedelta
 import click
 import pandas as pd
 import os
 
 
-def get_today():
-    t = datetime.today()
+def yesterday():
+    t = datetime.today() - timedelta(1)
     return t.year*10000+t.month*100+t.day
 
 
 VIEW = click.argument("views", nargs=-1)
 START = click.option("-s", "--start", default=None, type=click.INT)
-END_TODAY = click.option("-e", "--end", default=get_today(), type=click.INT)
+END_YESTERDAY = click.option("-e", "--end", default=yesterday(), type=click.INT)
 END = click.option("-e", "--end", default=None, type=click.INT)
 SYMBOL = click.option("--symbol", default=None)
 COVER = click.option("-c", "--cover", is_flag=True, default=False)

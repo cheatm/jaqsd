@@ -1,6 +1,6 @@
 from jaqsd import conf
 from jaqsd.utils import api
-from jaqsd.utils.structure import Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend
+from jaqsd.utils.structure import Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend, FinIndicator
 from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, SYMBOL, COVER, VIEW
 from datetime import datetime
 from pymongo import MongoClient, InsertOne
@@ -16,7 +16,7 @@ import click
 #     SecAdjFactor.view: SecAdjFactor
 # }
 QUERIES = {query.view: query for query in
-           [Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend]}
+           [Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend, FinIndicator]}
 
 
 def get_data(_api, query, **kwargs):

@@ -397,7 +397,8 @@ FinIndicator = QueryStructure(
              "yoyequity", "yoy_tr", "yoy_or", "qfa_yoygr", "qfa_cgrgr", "qfa_yoysales", "qfa_cgrsales", "qfa_yoyop",
              "qfa_cgrop",
              "qfa_yoyprofit", "qfa_cgrprofit", "qfa_yoynetprofit", "qfa_cgrnetprofit", "yoy_equity", "rd_expense",
-             "waa_roe"]
+             "waa_roe"],
+    index="ann_date"
 )
 
 

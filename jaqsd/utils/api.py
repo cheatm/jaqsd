@@ -53,7 +53,7 @@ def trade_day_index(start, end, api=None):
         params["end_date"] = end
     data, msg = api.query(**SecTradeCal("istradeday", "trade_date", **params))
     if msg == "0,":
-        return data.set_index("trade_date").index
+        return data.set_index("trade_date").rename_axis(int).index
     else:
         raise Exception(msg)
 

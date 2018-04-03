@@ -10,12 +10,21 @@ def yesterday():
     return t.year*10000+t.month*100+t.day
 
 
+def today():
+     t = datetime.today()
+     return t.year*10000+t.month*100+t.day
+
+
 VIEW = click.argument("views", nargs=-1)
 START = click.option("-s", "--start", default=None, type=click.INT)
+START_STR = click.option("-s", "--start", default=None, type=click.STRING)
 END_YESTERDAY = click.option("-e", "--end", default=yesterday(), type=click.INT)
-END = click.option("-e", "--end", default=None, type=click.INT)
+END_TODAY = click.option("-e", "--end", default=today(), type=click.INT)
+END_TODAY_STR = click.option("-e", "--end", default=str(today()), type=click.STRING)
+END = click.option("-e", "--end", default=None, type=click.STRING)
 SYMBOL = click.option("--symbol", default=None)
 COVER = click.option("-c", "--cover", is_flag=True, default=False)
+APPEND = click.option("-a", "--append", is_flag=True, default=False)
 
 
 class TradeDayIndex(object):
@@ -34,9 +43,13 @@ class TradeDayIndex(object):
     def flush(self):
         self.table.to_excel(self.name)
 
-    def create(self, start=None, end=None):
+    def create(self, start=None, end=None, append=False):
         dates = api.trade_day_index(start, end)
-        table = pd.DataFrame(0, dates, self._columns)
+        if append:
+            table = pd.DataFrame(self.table, dates, self._columns)
+            table.fillna(0, inplace=True)
+        else:
+            table = pd.DataFrame(0, dates, self._columns)
         self.table = table
         self.flush()
         return table
@@ -52,3 +65,31 @@ class TradeDayIndex(object):
     def fill(self, name, date, value):
         self.table.loc[date, name] = value
 
+
+import logging
+
+
+def logger(tag, *keys):
+    formatter = "%s | %s" % (tag, " | ".join(["%s"]*(len(keys)+1)))
+
+    def select(*args, **kwargs):
+        for key in keys:
+            if isinstance(key, int):
+                yield args[key]
+            else:
+                yield kwargs[key]
+
+    def wrapper(func):
+        def wrapped(*args, **kwargs):
+            show = list(select(*args, **kwargs))
+            try:
+                result = func(*args, **kwargs)
+            except Exception as e:
+                show.append(e)
+                logging.error(formatter, *show)
+            else:
+                show.append(result)
+                logging.warning(formatter, *show)
+                return result
+        return wrapped
+    return wrapper

@@ -1,7 +1,7 @@
 from jaqsd import conf
 from jaqsd.utils import api
 from jaqsd.utils.structure import Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend, FinIndicator
-from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, SYMBOL, COVER, VIEW
+from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, SYMBOL, COVER, VIEW, APPEND, END
 from datetime import datetime
 from pymongo import MongoClient, InsertOne
 import pandas as pd
@@ -9,12 +9,6 @@ import logging
 import click
 
 
-# QUERIES = {
-#     Income.view: Income,
-#     BalanceSheet.view: BalanceSheet,
-#     CashFlow.view: CashFlow,
-#     SecAdjFactor.view: SecAdjFactor
-# }
 QUERIES = {query.view: query for query in
            [Income, BalanceSheet, CashFlow, SecAdjFactor, ProfitExpress, SecDividend, FinIndicator]}
 
@@ -30,7 +24,7 @@ def get_data(_api, query, **kwargs):
 class DailyIndex(TradeDayIndex):
 
     def __init__(self, root, _api):
-        super(DailyIndex, self).__init__(root, "daily.xlsx", list(QUERIES.keys()))
+        super(DailyIndex, self).__init__(root, conf.get_tables()["lb_daily"]["file"], list(QUERIES.keys()))
         self.api = _api
 
     def iter_daily(self, view, symbol, start=None, end=None, cover=False):
@@ -91,6 +85,7 @@ class DailyDBWriter(object):
                 logging.error("check | %s | %s | %s", view, date, e)
             else:
                 logging.warning("check | %s | %s | %s", view, date, result)
+
                 yield date, result
 
 
@@ -162,10 +157,11 @@ def writes(views, symbol=None, start=None, end=None, cover=False):
 
 @click.command("create")
 @START
-@click.option("-e", "--end", default=None, type=click.INT)
-def create(start, end):
+@END
+@APPEND
+def create(start, end, append):
     di = get_index()
-    di.create(start, end)
+    di.create(start, end, append)
 
 
 @click.command("check")
@@ -217,7 +213,6 @@ group = click.Group(
      "check": check,
      "reach": reach}
 )
-
 
 if __name__ == '__main__':
     conf.init()

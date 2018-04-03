@@ -2,7 +2,20 @@ import logging
 import os
 import yaml
 
-_config = {}
+_config = {'mongodb_uri': None,
+           'username': '',
+           'password': '',
+           'col_map': {'lb.income': 'lb.income',
+                       'lb.balanceSheet': 'lb.balanceSheet',
+                       'lb.cashFlow': 'lb.cashFlow',
+                       'lb.secAdjFactor': 'lb.secAdjFactor',
+                       'lb.profitExpress': 'lb.profitExpress',
+                       'lb.secDividend': 'lb.secDividend',
+                       'lb.finIndicator': 'lb.finIndicator'},
+           'db_map': {'lb.secDailyIndicator': 'SecDailyIndicator'},
+           'tables': {"lb_daily": {"file": "daily.xlsx", "col": "log.lb_daily"},
+                      "lb_dailyIndicator": {"file": "dailyIndicator.xlsx", "col": "log.dailyIndicator"}}}
+
 
 CONF_DIR = os.environ.get("JAQSD_CONF_DIR", "/conf")
 FILE = "config.yml"
@@ -18,7 +31,20 @@ def load(path, default=dict):
 def init(root=None):
     if root:
         globals()["CONF_DIR"] = root
-    globals()["_config"] = load(FILE)
+    update(_config, load(FILE))
+    # globals()["_config"] = load(FILE)
+
+
+def update(origin, inputs):
+    for key, value in inputs.items():
+        if isinstance(value, dict):
+            o = origin.setdefault(key, {})
+            if isinstance(o, dict):
+                update(o, value)
+            else:
+                raise TypeError("Default type of %s is not dict" % key)
+        else:
+            origin[key] = value
 
 
 def uri():
@@ -56,6 +82,10 @@ def get_db(view):
 def get_client():
     from pymongo import MongoClient
     return MongoClient(uri())
+
+
+def get_tables():
+    return _config.get("tables")
 
 
 logging.basicConfig(

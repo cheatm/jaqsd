@@ -121,5 +121,7 @@ class SyncTable(object):
         return update(self.collection, t)
 
     def create(self):
-        return insert(self.collection, self.table)
+        result = insert(self.collection, self.table)
+        self.collection.create_index(self.table.index.name)
+        return result
 

@@ -11,16 +11,23 @@ def yesterday():
 
 
 def today():
-     t = datetime.today()
-     return t.year*10000+t.month*100+t.day
+    t = datetime.today()
+    return t.year*10000+t.month*100+t.day
+
+
+def day_shift(i=0):
+    t = datetime.today() - timedelta(i)
+    return t.year*10000+t.month*100+t.day
+
+
 
 
 VIEW = click.argument("views", nargs=-1)
 START = click.option("-s", "--start", default=None, type=click.INT)
 START_STR = click.option("-s", "--start", default=None, type=click.STRING)
-END_YESTERDAY = click.option("-e", "--end", default=yesterday(), type=click.INT)
-END_TODAY = click.option("-e", "--end", default=today(), type=click.INT)
-END_TODAY_STR = click.option("-e", "--end", default=str(today()), type=click.STRING)
+END_YESTERDAY = click.option("-e", "--end", default=day_shift(1), type=click.INT)
+END_TODAY = click.option("-e", "--end", default=day_shift(0), type=click.INT)
+END_TODAY_STR = click.option("-e", "--end", default=str(day_shift(1)), type=click.STRING)
 END = click.option("-e", "--end", default=None, type=click.STRING)
 SYMBOL = click.option("--symbol", default=None)
 COVER = click.option("-c", "--cover", is_flag=True, default=False)

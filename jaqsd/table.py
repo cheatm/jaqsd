@@ -1,5 +1,5 @@
 from jaqsd.utils.mongodb import SyncTable
-from jaqsd.utils.tool import logger, START_STR, END_TODAY_STR
+from jaqsd.utils.tool import logger, START_STR, END_TODAY_STR, day_shift
 from jaqsd import conf
 import pandas as pd
 import click
@@ -61,7 +61,7 @@ def create(name, clean=False):
 
 @click.command("sync")
 @END_TODAY_STR
-@START_STR
+@click.option("-s", "--start", default=str(day_shift(14)), type=click.STRING)
 @NAME
 @iterlize("name", lambda: conf.get_tables().keys())
 @logger("sync", "name", "start", "end")

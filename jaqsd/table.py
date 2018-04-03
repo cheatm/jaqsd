@@ -87,5 +87,5 @@ group = click.Group(
 
 
 if __name__ == '__main__':
-    conf.init("D:/jaqsd/conf/")
+    conf.init()
     group()

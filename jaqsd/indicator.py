@@ -84,7 +84,9 @@ class FieldIndex(TradeDayIndex):
             if cover:
                 yield date, row.index
             else:
-                yield date, row[row==0].index
+                f = row[row==0].index
+                if len(f):
+                    yield date, f
 
     def iter_fields(self, start, end, *fields, cover=False):
         table = self.loc(start, end, *fields)

@@ -1,7 +1,7 @@
 from jaqsd import conf
 from jaqsd.utils.mongodb import METHODS
 from jaqsd.utils import api
-from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, COVER, END
+from jaqsd.utils.tool import TradeDayIndex, START, END_YESTERDAY, COVER, END, APPEND
 import pandas as pd
 import logging
 from jaqsd.utils.structure import SecDailyIndicator
@@ -159,9 +159,10 @@ def fold(s):
 @click.command("create")
 @START
 @END
-def create(start, end):
+@APPEND
+def create(start, end, append):
     fi = FieldIndex(conf.CONF_DIR)
-    fi.create(start, end)
+    fi.create(start, end, append)
     fi.flush()
 
 

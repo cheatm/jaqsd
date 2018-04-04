@@ -88,6 +88,10 @@ def get_tables():
     return _config.get("tables")
 
 
+def get_file_path(name):
+    return os.path.join(CONF_DIR, name)
+
+
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"

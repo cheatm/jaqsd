@@ -32,6 +32,7 @@ END = click.option("-e", "--end", default=None, type=click.STRING)
 SYMBOL = click.option("--symbol", default=None)
 COVER = click.option("-c", "--cover", is_flag=True, default=False)
 APPEND = click.option("-a", "--append", is_flag=True, default=False)
+FORCE = click.option("-f", "--force", is_flag=True, default=False)
 
 
 class TradeDayIndex(object):

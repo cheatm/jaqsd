@@ -17,6 +17,6 @@ RUN crontab /jaqsd/routing/timelist
 
 VOLUME ["/logs", "/conf"]
 
-CMD /usr/sbin/cron -f
+CMD ["/bin/bash", "init.sh"]
 
 

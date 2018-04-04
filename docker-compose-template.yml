@@ -7,3 +7,7 @@ services:
     volumes:
       - "./conf:/conf"
       - ".:/logs"
+    environment:
+      INIT_LB_DAILY=""
+      INIT_INDICATOR=""
+      SYNC_TABLE=""

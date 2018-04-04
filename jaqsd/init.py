@@ -23,7 +23,7 @@ def init_lb_daily(start, end, append, cover, force=False):
 @COVER
 @FORCE
 def init_daily_indicator(start, end, append, cover, force=False):
-    if not os.path.exists(conf.get_file_path("lb_daily")) or force:
+    if not os.path.exists(conf.get_file_path("lb_dailyIndicator")) or force:
         indicator.create.callback(start, end, append)
     indicator.check.callback([], start, end, cover)
 

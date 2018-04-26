@@ -85,7 +85,3 @@ group = click.Group(
      "clear": clear}
 )
 
-
-if __name__ == '__main__':
-    conf.init()
-    group()

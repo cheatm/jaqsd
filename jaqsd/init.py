@@ -31,8 +31,3 @@ def init_daily_indicator(start, end, append, cover, force=False):
 group = click.Group("init",
                     commands={"indicator": init_daily_indicator,
                               "lb_daily": init_lb_daily})
-
-
-if __name__ == '__main__':
-    conf.init()
-    group()

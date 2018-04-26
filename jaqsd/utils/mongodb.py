@@ -4,14 +4,14 @@ import six
 
 
 def iter_insert(data):
-    if isinstance(data, pd.DataFrame):
-        for key, values in data.iterrows():
-            yield make_insert(values, data.index.name)
+    if data.index.name is not None:
+        data = data.reset_index()
+    for key, values in data.iterrows():
+        yield make_insert(values)
 
 
-def make_insert(series, index):
+def make_insert(series):
     dct = series.dropna().to_dict()
-    dct[index] = series.name
     return InsertOne(dct)
 
 
@@ -21,12 +21,12 @@ def insert(collection, data):
 
 def iter_update(data, **kwargs):
     if isinstance(data, pd.DataFrame):
-        for key, values in data.iterrows():
-            yield make_update(values, data.index.name)
+        for key, values in data.reset_index().iterrows():
+            yield make_update(values, data.index.name, **kwargs)
 
 
-def make_update(series, index, upsert=True, **kwargs):
-    return UpdateOne({index: series.name}, {"$set": series.dropna().to_dict()}, upsert=upsert)
+def make_update(series, index, how="$set", upsert=True, **kwargs):
+    return UpdateOne({index: series[index]}, {how: series.dropna().to_dict()}, upsert=upsert)
 
 
 def update(collection, data, **kwargs):
@@ -55,8 +55,11 @@ def read(collection, index, start=None, end=None, fields=None, filters=None):
     prj = {"_id": 0}
     if isinstance(fields, six.string_types):
         prj.update(dict.fromkeys(fields.split(","), 1))
+        prj[index] = 1
     elif fields is not None:
         prj.update(dict.fromkeys(fields, 1))
+        prj[index] = 1
+
     data = pd.DataFrame(list(collection.find(filters, prj)))
     return data.set_index(index)
 
@@ -76,6 +79,22 @@ class IndexMongodbMixin(object):
 
     def _update(self, table):
         return update(self.collection, table, upsert=False)
+
+
+from jaqsd import conf
+
+
+def get_collection(view):
+    db_col = conf.get_col(view)
+    db, col = db_col.split(".", 1)
+    client = conf.get_client()
+    return client[db][col]
+
+
+def get_db(name):
+    db = conf.get_db(name)
+    client = conf.get_client()
+    return client[db]
 
 
 # from jaqsd.utils.table import BaseIndexTable

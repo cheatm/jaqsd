@@ -58,6 +58,40 @@ def trade_day_index(start, end, api=None):
         raise Exception(msg)
 
 
+def get_trade_days(start=0, end=99999999):
+    import os
+    import pandas as pd
+    with open(os.path.join(conf.CONF_DIR, "trade_days")) as f:
+        days = f.read()
+        index = pd.Index(list(map(int, days.split(","))))
+        return index[slice(*index.slice_locs(start, end, kind="loc"))]
+
+
+class _Date:
+
+    def __init__(self, date):
+        self.date = date
+
+    def month(self, n=0):
+        if self.date.month+n <= 12:
+            return self.date.year*100 + self.date.month + n
+        else:
+            return (self.date.year+1)*100 + self.date.month + n - 12
+
+    @property
+    def day(self):
+        return self.date.year*10000+self.date.month*100+self.date.day
+
+
+def get_future_mi(symbols, date, api=None):
+    if api is None:
+        api = get_api()
+    data = api.daily(symbols, date, date)[0].set_index("symbol")
+    print(data)
+    return data.oi.idxmax()
+    # return data.oi.idxmax()
+
+
 def close():
     get_api().close()
     single.delete("_api")

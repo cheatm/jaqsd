@@ -201,8 +201,3 @@ group = click.Group(
      "write": write,
      "create": create}
 )
-
-
-if __name__ == '__main__':
-    conf.init()
-    group()

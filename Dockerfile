@@ -9,6 +9,7 @@ RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt 
 
 ADD . /jaqsd
 WORKDIR /jaqsd
+RUN python setup.py install
 
 ENV LC_ALL="C.UTF-8" LANG="C.UTF-8" PYTHONPATH=/jaqsd:$PYTHONPATH
 RUN ln -s /jaqsd/routing/env.sh /etc/profile.d/env.sh

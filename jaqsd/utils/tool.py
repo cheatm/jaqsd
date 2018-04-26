@@ -77,17 +77,24 @@ class TradeDayIndex(object):
 import logging
 
 
-def logger(tag, *keys):
+def logger(tag, *keys, default=lambda: None):
     formatter = "%s | %s" % (tag, " | ".join(["%s"]*(len(keys)+1)))
 
     def select(*args, **kwargs):
         for key in keys:
             if isinstance(key, int):
-                yield args[key]
+                try:
+                    yield args[key]
+                except IndexError:
+                    yield None
             else:
-                yield kwargs[key]
+                try:
+                    yield kwargs[key]
+                except KeyError:
+                    yield None
 
     def wrapper(func):
+
         def wrapped(*args, **kwargs):
             show = list(select(*args, **kwargs))
             try:
@@ -95,9 +102,32 @@ def logger(tag, *keys):
             except Exception as e:
                 show.append(e)
                 logging.error(formatter, *show)
+                return default()
             else:
                 show.append(result)
                 logging.warning(formatter, *show)
                 return result
         return wrapped
     return wrapper
+
+
+class WorkFlow:
+
+    def __init__(self, *args):
+        self.flow = []
+        for f, a, k in args:
+            self.add(f, *a, **k)
+
+    def add(self, func, *args, **kwargs):
+        self.flow.append((func, args, kwargs))
+        return self
+
+    def run(self):
+        func, args, kwargs = self.flow[0]
+        result = func(*args, **kwargs)
+        for func, args, kwargs in self.flow[1:]:
+            if result is not None:
+                result = func(result, *args, **kwargs)
+            else:
+                return
+        return result

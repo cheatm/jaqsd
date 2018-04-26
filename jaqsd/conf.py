@@ -11,8 +11,11 @@ _config = {'mongodb_uri': None,
                        'lb.secAdjFactor': 'lb.secAdjFactor',
                        'lb.profitExpress': 'lb.profitExpress',
                        'lb.secDividend': 'lb.secDividend',
-                       'lb.finIndicator': 'lb.finIndicator'},
-           'db_map': {'lb.secDailyIndicator': 'SecDailyIndicator'},
+                       'lb.finIndicator': 'lb.finIndicator',
+                       'log.future_commercial': 'log.future_commercial'},
+           'db_map': {'lb.secDailyIndicator': 'SecDailyIndicator',
+                      'future_1m': "future_1m",
+                      'future': {"1M": "future_1M"}},
            'tables': {"lb_daily": {"file": "daily.xlsx", "col": "log.lb_daily"},
                       "lb_dailyIndicator": {"file": "dailyIndicator.xlsx", "col": "log.dailyIndicator"}}}
 

@@ -87,9 +87,7 @@ def get_future_mi(symbols, date, api=None):
     if api is None:
         api = get_api()
     data = api.daily(symbols, date, date)[0].set_index("symbol")
-    print(data)
     return data.oi.idxmax()
-    # return data.oi.idxmax()
 
 
 def close():

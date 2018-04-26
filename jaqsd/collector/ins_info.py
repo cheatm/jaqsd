@@ -88,7 +88,7 @@ class InstTable(object):
     @logger("Pull instrument info", 1)
     def pull(self, date):
         data = get_new_list(date)
-        if self.collection.find.count() > 0:
+        if self.collection.find().count() > 0:
             return update(self.collection, data)
         else:
             return insert(self.collection, data)

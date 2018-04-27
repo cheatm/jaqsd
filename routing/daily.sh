@@ -1,5 +1,7 @@
 #! /bin/bash
 
+source /etc/profile
+
 jaqsd instrument write
 
 jaqsd daily_index write

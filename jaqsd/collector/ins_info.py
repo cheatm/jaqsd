@@ -99,7 +99,7 @@ import click
 
 @click.command("update")
 @click.argument("date", nargs=1, default=yesterday(), type=click.INT)
-def update(date):
+def write(date):
     it = InstTable(get_collection("jz.instrumentInfo"))
     it.pull(date)
 
@@ -113,6 +113,7 @@ def check():
 
 group = click.Group(
     "instrument",
-    {"write": update,
+    {"write": write,
      "check": check}
 )
+

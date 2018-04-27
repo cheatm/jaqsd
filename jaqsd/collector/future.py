@@ -51,8 +51,8 @@ methods = {"insert": insert_chunk,
 def make_doc(data):
     doc = data.reset_index().to_dict("list")
     date = data.index[-1]
-    doc["_d"] = datetime(date.year, date.month, date.day)
-    doc["_l"] = len(data.index)
+    doc[DATE] = datetime(date.year, date.month, date.day)
+    doc[LENGTH] = len(data.index)
     return doc
 
 

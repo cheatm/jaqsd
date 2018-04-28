@@ -342,6 +342,7 @@ def today():
 
 START = click.Option(["-s", "--start"], default=yesterday(), type=click.INT)
 END = click.Option(["-e", "--end"], default=today(), type=click.INT)
+END_LAST = click.Option(["-e", "--end"], default=202912131, type=click.INT)
 NAMES = click.Argument(["names"], nargs=-1)
 HOW = click.Option(["-h", "--how"], type=click.STRING)
 HOW_UPDATE = click.Option(["-h", "--how"], default="update", type=click.STRING)
@@ -353,7 +354,7 @@ group = click.Group(
     "future",
     commands={
         "create": click.Command("create", callback=create,
-                                params=[START, END, HOW_INSERT]),
+                                params=[START, END_LAST, HOW_INSERT]),
         "contract": click.Command("contract", callback=contract,
                                   params=[NAMES, START, END, HOW_UPDATE]),
         "check": click.Command("check", callback=check,

@@ -21,12 +21,16 @@ def insert(collection, data):
 
 def iter_update(data, **kwargs):
     if isinstance(data, pd.DataFrame):
-        for key, values in data.reset_index().iterrows():
-            yield make_update(values, data.index.name, **kwargs)
+        if isinstance(data.index, pd.MultiIndex):
+            for key, values in data.reset_index().iterrows():
+                yield make_update(values, data.index.names, **kwargs)
+        else:
+            for key, values in data.reset_index().iterrows():
+                yield make_update(values, [data.index.name], **kwargs)
 
 
 def make_update(series, index, how="$set", upsert=True, **kwargs):
-    return UpdateOne({index: series[index]}, {how: series.dropna().to_dict()}, upsert=upsert)
+    return UpdateOne({i: series[i] for i in index}, {how: series.dropna().to_dict()}, upsert=upsert)
 
 
 def update(collection, data, **kwargs):
@@ -34,12 +38,17 @@ def update(collection, data, **kwargs):
     return result.matched_count, result.upserted_count
 
 
+def append(collection, data):
+    return update(collection, data, how='$setOnInsert')
+
+
 METHODS = {"insert": iter_insert,
            "update": iter_update}
 
 
 WRITE_METHODS = {"insert": insert,
-                 "update": update}
+                 "update": update,
+                 "append": append}
 
 
 def read(collection, index, start=None, end=None, fields=None, filters=None):
@@ -96,35 +105,6 @@ def get_db(name):
     client = conf.get_client()
     return client[db]
 
-
-# from jaqsd.utils.table import BaseIndexTable
-#
-#
-# class MongodbTable(BaseIndexTable, IndexMongodbMixin):
-#
-#     def __init__(self, collection, index="trade_date"):
-#         IndexMongodbMixin.__init__(self, collection, index)
-#
-#     def get(self, start=None, end=None, fields=None):
-#         try:
-#             return self._read(start, end, fields)
-#         except Exception as e:
-#             return pd.DataFrame()
-#
-#     def find(self, value, start=None, end=None, fields=None, axis=0):
-#         table = self.get(start, end, fields)
-#         if axis == 0:
-#             iterable = table.iterrows()
-#         else:
-#             iterable = table.iteritems()
-#
-#         for name, series in iterable:
-#             yield name, series[series==0].index
-#
-#     def fill(self, index, column, value):
-#         return self.collection.update_one({self.index: index}, {"$set": {column: value}})
-#
-#
 
 class SyncTable(object):
 

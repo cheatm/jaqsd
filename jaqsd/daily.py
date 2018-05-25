@@ -100,7 +100,7 @@ last_week = int((datetime.now() - timedelta(7)).strftime("%Y%m%d"))
 def DEFAULT(func):
     def wrapped(**kwargs):
         if len(kwargs.get("codes", [])) == 0:
-            kwargs['codes'] = list(INDEXES)
+            kwargs['codes'] = all_index()
         return func(**kwargs)
 
     wrapped.__name__ = func.__name__
@@ -134,7 +134,14 @@ def init_indexes():
     globals()["INDEXES"] = conf.load(FILE, list)
 
 
+from jaqsd.utils.mongodb import read as mread, get_collection
+
+
+def all_index():
+    name = conf.get_col("jz.instrumentInfo")
+    collection = get_collection(name)
+    return mread(collection, "symbol", filters={'inst_type': 100, "market": {"$in": ["SZ", "SH"]}}).index
+
+
 if __name__ == '__main__':
-    conf.init()
-    init_indexes()
     group()

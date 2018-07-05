@@ -5,6 +5,7 @@ import yaml
 _config = {'mongodb_uri': None,
            'username': '',
            'password': '',
+           'addr': "tcp://data.quantos.org:8910",
            'col_map': {'lb.income': 'lb.income',
                        'lb.balanceSheet': 'lb.balanceSheet',
                        'lb.cashFlow': 'lb.cashFlow',
@@ -64,6 +65,10 @@ def username():
 
 def password():
     return _config.get("password", "password")
+
+
+def addr():
+    return _config.get("addr", "tcp://data.quantos.org:8910")
 
 
 def col_map():

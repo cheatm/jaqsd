@@ -7,10 +7,11 @@ import logging
 
 
 @single("_api")
-def get_api(username=None, password=None):
+def get_api(username=None, password=None, addr=None):
     u = username if username else conf.username()
     p = password if password else conf.password()
-    api = DataApi()
+    a = addr if addr else conf.addr()
+    api = DataApi(a)
     api.login(u, p)
     logging.warning("DataApi login | username=%s | password=%s", u, p)
     return api
@@ -93,3 +94,17 @@ def get_future_mi(symbols, date, api=None):
 def close():
     get_api().close()
     single.delete("_api")
+
+
+def main():
+    conf.init(r"D:\jaqsd\conf")
+    # print(conf._config)
+    api = get_api()
+    # symbol = all_stock_symbol()
+    # print(symbol)
+    # data, msg = api.query("lb.income", "symbol=%s&start_date=20180609&end_date=20180609" % symbol)
+    data, msg = api.daily("000002.SZ", 20160101, 20170101)
+    print(data, msg, sep="\n")
+
+if __name__ == '__main__':
+    main()

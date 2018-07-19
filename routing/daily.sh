@@ -4,6 +4,8 @@ source /etc/profile
 
 jaqsd instrument write
 
+python /jaqsd/jaqsd/collector/daily.py
+
 jaqsd daily_index write
 
 jaqsd finance write
